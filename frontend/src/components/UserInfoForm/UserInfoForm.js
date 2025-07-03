@@ -13,8 +13,6 @@ import { v4 as uuidv4 } from "uuid";
 export default function UserInfoForm() {
   const [name, setName] = useState("");
   const [age, setAge] = useState("");
-  const [pose, setPose] = useState("");
-  const [time, setTime] = useState(0);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -24,7 +22,7 @@ export default function UserInfoForm() {
       userId = uuidv4();
       localStorage.setItem("userId", userId);
     }
-    const userDetails = { userId, name, age, pose, time: 0 };
+    const userDetails = { userId, name, age, time: 0 };
     localStorage.setItem("userDetails", JSON.stringify(userDetails));
     navigate("/start");
   };
@@ -49,6 +47,8 @@ export default function UserInfoForm() {
             borderRadius: 4,
             background: "rgba(44, 62, 80, 0.98)",
             boxShadow: "0 8px 32px 0 rgba(0,0,0,0.25)",
+            mx: { xs: 1, sm: 2, md: 0 },
+            width: { xs: "95vw", sm: "auto" },
           },
         }}
       >
@@ -60,6 +60,7 @@ export default function UserInfoForm() {
               color: "#7289da",
               textAlign: "center",
               fontWeight: 700,
+              fontSize: { xs: 20, md: 24 },
             }}
           >
             Enter Your Info
@@ -69,7 +70,12 @@ export default function UserInfoForm() {
           <Box
             component="form"
             onSubmit={handleSubmit}
-            sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: { xs: 1.5, md: 2 },
+              mt: 1,
+            }}
           >
             <TextField
               label="Name"
@@ -78,8 +84,12 @@ export default function UserInfoForm() {
               onChange={(e) => setName(e.target.value)}
               required
               fullWidth
-              InputProps={{ sx: { color: "white" } }}
-              InputLabelProps={{ sx: { color: "#7289da" } }}
+              InputProps={{
+                sx: { color: "white", fontSize: { xs: 16, md: 18 } },
+              }}
+              InputLabelProps={{
+                sx: { color: "#7289da", fontSize: { xs: 16, md: 18 } },
+              }}
               sx={{
                 "& .MuiOutlinedInput-root": {
                   "& fieldset": { borderColor: "#7289da" },
@@ -97,8 +107,12 @@ export default function UserInfoForm() {
               onChange={(e) => setAge(e.target.value)}
               required
               fullWidth
-              InputProps={{ sx: { color: "white" } }}
-              InputLabelProps={{ sx: { color: "#7289da" } }}
+              InputProps={{
+                sx: { color: "white", fontSize: { xs: 16, md: 18 } },
+              }}
+              InputLabelProps={{
+                sx: { color: "#7289da", fontSize: { xs: 16, md: 18 } },
+              }}
               sx={{
                 "& .MuiOutlinedInput-root": {
                   "& fieldset": { borderColor: "#7289da" },
@@ -109,7 +123,9 @@ export default function UserInfoForm() {
                 input: { color: "white" },
               }}
             />
-            <DialogActions sx={{ justifyContent: "center", mt: 2 }}>
+            <DialogActions
+              sx={{ justifyContent: "center", mt: { xs: 1, md: 2 } }}
+            >
               <Button
                 type="submit"
                 variant="contained"
@@ -118,9 +134,9 @@ export default function UserInfoForm() {
                     "linear-gradient(135deg, #7289da 0%, #2c3e50 100%)",
                   color: "white",
                   borderRadius: 2,
-                  px: 4,
-                  py: 1.5,
-                  fontSize: 18,
+                  px: { xs: 2, md: 4 },
+                  py: { xs: 1, md: 1.5 },
+                  fontSize: { xs: 16, md: 18 },
                   fontWeight: 700,
                   boxShadow: "0px 0px 15px rgba(114, 137, 218, 0.3)",
                   "&:hover": {

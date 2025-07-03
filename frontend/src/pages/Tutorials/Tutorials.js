@@ -32,11 +32,12 @@ export default function Tutorials() {
       >
         <Toolbar
           sx={{
-            position: "relative",
-            display: "flex",
-            justifyContent: "center",
+            flexDirection: { xs: "column", sm: "row" },
             alignItems: "center",
+            justifyContent: "center",
             minHeight: 80,
+            px: 2,
+            position: "relative",
           }}
         >
           <Typography
@@ -47,11 +48,22 @@ export default function Tutorials() {
               letterSpacing: 1,
               textAlign: "center",
               width: "100%",
+              mb: { xs: 1, sm: 0 },
             }}
           >
             Tutorials
           </Typography>
-          <Box sx={{ position: "absolute", right: 24 }}>
+          <Box
+            sx={{
+              display: "flex",
+              gap: 2,
+              position: { xs: "static", sm: "absolute" },
+              right: { sm: 24 },
+              mt: { xs: 1, sm: 0 },
+              width: { xs: "100%", sm: "auto" },
+              justifyContent: { xs: "center", sm: "flex-end" },
+            }}
+          >
             <Button
               onClick={() => navigate("/")}
               variant="contained"
@@ -78,11 +90,18 @@ export default function Tutorials() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
+          px: { xs: 1, sm: 2, md: 0 },
         }}
       >
         <Typography
           variant="h5"
-          sx={{ color: "#ffeb3b", mb: 2, textAlign: "center", fontWeight: 700 }}
+          sx={{
+            color: "#ffeb3b",
+            mb: { xs: 1, md: 2 },
+            textAlign: "center",
+            fontWeight: 700,
+            fontSize: { xs: 18, md: 24 },
+          }}
         >
           Basic Tutorials
         </Typography>
@@ -91,19 +110,28 @@ export default function Tutorials() {
             width: "100%",
             background: "rgba(0,0,0,0.3)",
             borderRadius: 3,
-            p: 3,
-            mb: 4,
+            p: { xs: 1, md: 3 },
+            mb: { xs: 2, md: 4 },
           }}
         >
           {tutorials.map((tutorial, idx) => (
-            <Typography key={idx} sx={{ color: "white", mb: 1 }}>
+            <Typography
+              key={idx}
+              sx={{ color: "white", mb: 1, fontSize: { xs: 15, md: 18 } }}
+            >
               {tutorial}
             </Typography>
           ))}
         </Box>
         <Typography
           variant="h5"
-          sx={{ color: "#ffeb3b", mb: 2, textAlign: "center", fontWeight: 700 }}
+          sx={{
+            color: "#ffeb3b",
+            mb: { xs: 1, md: 2 },
+            textAlign: "center",
+            fontWeight: 700,
+            fontSize: { xs: 18, md: 24 },
+          }}
         >
           Camera Not Working?
         </Typography>
@@ -112,11 +140,14 @@ export default function Tutorials() {
             width: "100%",
             background: "rgba(0,0,0,0.3)",
             borderRadius: 3,
-            p: 3,
+            p: { xs: 1, md: 3 },
           }}
         >
           {fixCamera.map((points, idx) => (
-            <Typography key={idx} sx={{ color: "white", mb: 1 }}>
+            <Typography
+              key={idx}
+              sx={{ color: "white", mb: 1, fontSize: { xs: 15, md: 18 } }}
+            >
               {points}
             </Typography>
           ))}

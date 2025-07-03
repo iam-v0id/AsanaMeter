@@ -17,14 +17,15 @@ export default function Instructions({ currentPose }) {
         flexDirection: { xs: "column", md: "row" },
         alignItems: "center",
         justifyContent: "center",
-        gap: 4,
+        gap: { xs: 2, md: 4 },
+        px: { xs: 2, md: 0 },
       }}
     >
       <Paper
         elevation={4}
         sx={{
           flex: 2,
-          p: 3,
+          p: { xs: 2, md: 3 },
           borderRadius: 3,
           background: "rgba(44, 62, 80, 0.95)",
           mb: { xs: 2, md: 0 },
@@ -32,20 +33,35 @@ export default function Instructions({ currentPose }) {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
+          width: "100%",
         }}
       >
         <Typography
           variant="h6"
-          sx={{ color: "#ffeb3b", mb: 2, textAlign: "center", fontWeight: 700 }}
+          sx={{
+            color: "#ffeb3b",
+            mb: 2,
+            textAlign: "center",
+            fontWeight: 700,
+            fontSize: { xs: 18, md: 20 },
+          }}
         >
           How to do {currentPose}
         </Typography>
-        <Box component="ul" sx={{ pl: 3, m: 0, textAlign: "left" }}>
+        <Box
+          component="ul"
+          sx={{ pl: 3, m: 0, textAlign: "left", width: "100%" }}
+        >
           {poseInstructions[currentPose].map((instruction, idx) => (
             <Typography
               component="li"
               key={idx}
-              sx={{ color: "white", mb: 1.5, fontSize: 18, lineHeight: 1.6 }}
+              sx={{
+                color: "white",
+                mb: 1.5,
+                fontSize: { xs: 16, md: 18 },
+                lineHeight: 1.6,
+              }}
             >
               {instruction}
             </Typography>
@@ -58,19 +74,20 @@ export default function Instructions({ currentPose }) {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          minWidth: 180,
-          height: "100%",
+          width: "100%",
+          maxWidth: { xs: 300, sm: 400, md: 420 },
         }}
       >
         <img
-          className="pose-demo-img"
           src={poseImages[currentPose]}
           alt={`Demonstration of ${currentPose}`}
           style={{
-            maxWidth: 420,
             width: "100%",
+            height: "auto",
+            maxHeight: "400px",
             borderRadius: 8,
             boxShadow: "0 2px 12px 0 rgba(0,0,0,0.15)",
+            objectFit: "contain",
           }}
         />
       </Box>

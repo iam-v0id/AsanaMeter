@@ -87,11 +87,12 @@ export default function Home() {
       >
         <Toolbar
           sx={{
-            display: "flex",
-            justifyContent: "center",
+            flexDirection: { xs: "column", sm: "row" },
             alignItems: "center",
+            justifyContent: "center",
             minHeight: 96,
             px: 3,
+            position: "relative",
           }}
         >
           <Typography
@@ -102,31 +103,41 @@ export default function Home() {
               letterSpacing: 1,
               textAlign: "center",
               flex: 1,
+              mb: { xs: 1, sm: 0 },
             }}
           >
             Yoga Challenge
           </Typography>
-          <Link
-            to="/about"
-            style={{ textDecoration: "none", position: "absolute", right: 24 }}
+          <Box
+            sx={{
+              display: "flex",
+              gap: 2,
+              position: { xs: "static", sm: "absolute" },
+              right: { sm: 24 },
+              mt: { xs: 1, sm: 0 },
+              width: { xs: "100%", sm: "auto" },
+              justifyContent: { xs: "center", sm: "flex-end" },
+            }}
           >
-            <Button
-              variant="outlined"
-              color="inherit"
-              startIcon={<InfoIcon />}
-              sx={{
-                borderColor: "white",
-                color: "white",
-                "&:hover": {
-                  background: "white",
-                  color: "#7289da",
+            <Link to="/about" style={{ textDecoration: "none" }}>
+              <Button
+                variant="outlined"
+                color="inherit"
+                startIcon={<InfoIcon />}
+                sx={{
                   borderColor: "white",
-                },
-              }}
-            >
-              About
-            </Button>
-          </Link>
+                  color: "white",
+                  "&:hover": {
+                    background: "white",
+                    color: "#7289da",
+                    borderColor: "white",
+                  },
+                }}
+              >
+                About
+              </Button>
+            </Link>
+          </Box>
         </Toolbar>
       </AppBar>
 
@@ -139,6 +150,7 @@ export default function Home() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
+          px: { xs: 1, sm: 2, md: 0 },
         }}
       >
         <Typography
@@ -146,14 +158,26 @@ export default function Home() {
           sx={{
             color: "#ffeb3b",
             fontFamily: "Raleway, sans-serif",
-            mt: 4,
-            mb: 2,
+            mt: { xs: 2, md: 4 },
+            mb: { xs: 1, md: 2 },
             textShadow: "2px 2px 8px #000",
+            fontSize: { xs: 32, sm: 40, md: 56 },
+            textAlign: "center",
           }}
         >
           Asana Meter
         </Typography>
-        <Box sx={{ display: "flex", gap: 4, mt: 4 }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            gap: { xs: 2, md: 4 },
+            mt: { xs: 2, md: 4 },
+            width: "100%",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
           <Link to="/user-info" style={{ textDecoration: "none" }}>
             <Button
               variant="contained"
@@ -161,12 +185,14 @@ export default function Home() {
               startIcon={<PlayArrowIcon />}
               sx={{
                 borderRadius: 8,
-                fontSize: 22,
-                px: 4,
-                py: 2,
+                fontSize: { xs: 18, md: 22 },
+                px: { xs: 2, md: 4 },
+                py: { xs: 1, md: 2 },
                 background: "linear-gradient(135deg, #7289da 0%, #2c3e50 100%)",
                 color: "white",
                 boxShadow: "0px 0px 15px rgba(114, 137, 218, 0.3)",
+                minWidth: 180,
+                minHeight: 48,
                 "&:hover": {
                   background:
                     "linear-gradient(135deg, #2c3e50 0%, #7289da 100%)",
@@ -184,12 +210,14 @@ export default function Home() {
               startIcon={<SchoolIcon />}
               sx={{
                 borderRadius: 8,
-                fontSize: 22,
-                px: 4,
-                py: 2,
+                fontSize: { xs: 18, md: 22 },
+                px: { xs: 2, md: 4 },
+                py: { xs: 1, md: 2 },
                 color: "#7289da",
                 borderColor: "#7289da",
                 background: "rgba(255,255,255,0.05)",
+                minWidth: 180,
+                minHeight: 48,
                 "&:hover": {
                   background:
                     "linear-gradient(135deg, #7289da 0%, #2c3e50 100%)",

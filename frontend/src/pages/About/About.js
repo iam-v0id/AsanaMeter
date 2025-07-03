@@ -31,11 +31,12 @@ export default function About() {
       >
         <Toolbar
           sx={{
-            position: "relative",
-            display: "flex",
-            justifyContent: "center",
+            flexDirection: { xs: "column", sm: "row" },
             alignItems: "center",
+            justifyContent: "center",
             minHeight: 80,
+            px: 2,
+            position: "relative",
           }}
         >
           <Typography
@@ -46,11 +47,22 @@ export default function About() {
               letterSpacing: 1,
               textAlign: "center",
               width: "100%",
+              mb: { xs: 1, sm: 0 },
             }}
           >
             About
           </Typography>
-          <Box sx={{ position: "absolute", right: 24 }}>
+          <Box
+            sx={{
+              display: "flex",
+              gap: 2,
+              position: { xs: "static", sm: "absolute" },
+              right: { sm: 24 },
+              mt: { xs: 1, sm: 0 },
+              width: { xs: "100%", sm: "auto" },
+              justifyContent: { xs: "center", sm: "flex-end" },
+            }}
+          >
             <Button
               onClick={() => navigate("/")}
               variant="contained"
@@ -77,6 +89,7 @@ export default function About() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
+          px: { xs: 1, sm: 2, md: 0 },
         }}
       >
         <Box
@@ -85,13 +98,20 @@ export default function About() {
             mx: "auto",
             background: "rgba(0,0,0,0.35)",
             borderRadius: 3,
-            p: 4,
+            p: { xs: 2, md: 4 },
             boxShadow: "0 2px 16px 0 rgba(0,0,0,0.10)",
+            width: "100%",
           }}
         >
           <Typography
             variant="h5"
-            sx={{ color: "white", mb: 2, textAlign: "center", fontWeight: 700 }}
+            sx={{
+              color: "white",
+              mb: { xs: 1, md: 2 },
+              textAlign: "center",
+              fontWeight: 700,
+              fontSize: { xs: 18, md: 24 },
+            }}
           >
             How It Works
           </Typography>
@@ -100,7 +120,7 @@ export default function About() {
             sx={{
               color: "white",
               textAlign: "center",
-              fontSize: 20,
+              fontSize: { xs: 16, md: 20 },
               lineHeight: 1.7,
             }}
           >

@@ -41,9 +41,21 @@ const poseList = [
 ];
 
 let skeletonColor = "rgb(255,255,255)";
-let interval;
 
 function Yoga() {
+  // Responsive window size
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Mutable refs for interval and flag
+  const intervalRef = useRef(null);
+  const flagRef = useRef(false);
+  const countAudio = useRef(new Audio(count));
+
   useEffect(() => {
     const style = document.createElement("style");
     style.innerHTML = `
@@ -56,14 +68,18 @@ function Yoga() {
       }
     `;
     document.head.appendChild(style);
+    const audio = countAudio.current;
     return () => {
       document.head.removeChild(style);
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      audio.pause();
+      audio.currentTime = 0;
     };
   }, []);
 
   const webcamRef = useRef(null);
   const canvasRef = useRef(null);
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
 
   const [startingTime, setStartingTime] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
@@ -73,26 +89,24 @@ function Yoga() {
     localStorage.getItem("currentPose") || "Vrikshasana"
   );
   const [isStartPose, setIsStartPose] = useState(false);
-  const [countAudio] = useState(new Audio(count));
-  let flag = false;
+  const [apiError, setApiError] = useState("");
 
   useEffect(() => {
     const timeDiff = (currentTime - startingTime) / 1000;
-    // if (flag) {
     setPoseTime(timeDiff);
-    // }
-    if (timeDiff >= bestPerform) {
+    if (timeDiff > bestPerform) {
       setBestPerform(timeDiff);
-      const userDetails = JSON.parse(localStorage.getItem("userDetails"));
+      let userDetails;
+      try {
+        userDetails = JSON.parse(localStorage.getItem("userDetails")) || {};
+      } catch {
+        userDetails = {};
+      }
       userDetails.pose = currentPose;
       userDetails.time = timeDiff;
       localStorage.setItem("userDetails", JSON.stringify(userDetails));
-      // After storing, navigate to the 'Start' page
-      // navigate("/start");
-
-      // Optional: You can still send the data to your backend if necessary
     }
-  }, [currentTime]);
+  }, [currentTime, bestPerform, currentPose, startingTime]);
 
   useEffect(() => {
     setCurrentTime(0);
@@ -118,25 +132,6 @@ function Yoga() {
       [1, 34]
     );
   };
-
-  const runMovenet = useCallback(async () => {
-    console.log("Running detect pose");
-    const detectorConfig = {
-      modelType: poseDetection.movenet.modelType.SINGLEPOSE_THUNDER,
-    };
-    const detector = await poseDetection.createDetector(
-      poseDetection.SupportedModels.MoveNet,
-      detectorConfig
-    );
-    const poseClassifier = await tf.loadLayersModel(
-      "https://models.s3.jp-tok.cloud-object-storage.appdomain.cloud/model.json"
-    );
-
-    countAudio.loop = false;
-    interval = setInterval(() => {
-      detectPose(detector, poseClassifier);
-    }, 100);
-  }, [startingTime]);
 
   const detectPose = async (detector, poseClassifier) => {
     if (webcamRef.current?.video.readyState === 4) {
@@ -184,11 +179,28 @@ function Yoga() {
     }
   };
 
+  const runMovenet = useCallback(async () => {
+    const detectorConfig = {
+      modelType: poseDetection.movenet.modelType.SINGLEPOSE_THUNDER,
+    };
+    const detector = await poseDetection.createDetector(
+      poseDetection.SupportedModels.MoveNet,
+      detectorConfig
+    );
+    const poseClassifier = await tf.loadLayersModel(
+      "https://models.s3.jp-tok.cloud-object-storage.appdomain.cloud/model.json"
+    );
+
+    countAudio.current.loop = false;
+    intervalRef.current = setInterval(() => {
+      detectPose(detector, poseClassifier);
+    }, 100);
+  }, [startingTime, detectPose]);
+
   const handlePoseDetected = () => {
-    if (!flag) {
-      console.log("PoseDetected first");
-      flag = true;
-      countAudio.play();
+    if (!flagRef.current) {
+      flagRef.current = true;
+      countAudio.current.play();
       setStartingTime(Date.now());
     }
     setCurrentTime(Date.now());
@@ -196,11 +208,10 @@ function Yoga() {
   };
 
   const handlePoseNotDetected = () => {
-    console.log("PoseNot Detected");
-    flag = false;
+    flagRef.current = false;
     skeletonColor = "rgb(255,255,255)";
-    countAudio.pause();
-    countAudio.currentTime = 0;
+    countAudio.current.pause();
+    countAudio.current.currentTime = 0;
   };
 
   const startPose = () => {
@@ -210,13 +221,19 @@ function Yoga() {
 
   const stopPose = async () => {
     setIsStartPose(false);
-    clearInterval(interval);
-    console.log("Hii");
+    if (intervalRef.current) clearInterval(intervalRef.current);
     try {
-      const userDetails = JSON.parse(localStorage.getItem("userDetails"));
+      let userDetails;
+      try {
+        userDetails = JSON.parse(localStorage.getItem("userDetails")) || {};
+      } catch {
+        userDetails = {};
+      }
       userDetails.pose = currentPose;
-      userDetails.time = poseTime; // Ensure time is captured
-      const response = await fetch("http://localhost:5000/add-time", {
+      userDetails.time = poseTime;
+      const API_BASE_URL =
+        process.env.REACT_APP_API_URL || "http://localhost:5000";
+      const response = await fetch(`${API_BASE_URL}/add-time`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -224,12 +241,13 @@ function Yoga() {
         body: JSON.stringify(userDetails),
       });
 
-      if (response.ok) {
-        console.log("User information saved successfully.");
+      if (!response.ok) {
+        setApiError("Failed to save user information. Please try again.");
       } else {
-        console.error("Failed to save user information.");
+        setApiError("");
       }
     } catch (error) {
+      setApiError("Error saving user information. Please try again.");
       console.error("Error:", error);
     }
   };
@@ -287,17 +305,17 @@ function Yoga() {
             alignItems: "center",
             justifyContent: "center",
             width: "100%",
-            px: 0,
-            mt: 4,
+            px: { xs: 1, sm: 2, md: 0 },
+            mt: { xs: 1, md: 4 },
             minHeight: 0,
           }}
         >
           <Grid
             container
-            spacing={2}
+            spacing={{ xs: 1, md: 2 }}
             alignItems="center"
             justifyContent="center"
-            sx={{ mb: 3 }}
+            sx={{ mb: { xs: 1, md: 3 } }}
           >
             <Grid item xs={12} md={4}>
               <Typography
@@ -306,9 +324,10 @@ function Yoga() {
                   color: "white",
                   background: "rgba(0,0,0,0.3)",
                   borderRadius: 2,
-                  px: 3,
-                  py: 1,
+                  px: { xs: 1, md: 3 },
+                  py: { xs: 0.5, md: 1 },
                   textAlign: "center",
+                  fontSize: { xs: 16, md: 20 },
                 }}
               >
                 Pose Time: {poseTime.toFixed(2)} s
@@ -321,9 +340,10 @@ function Yoga() {
                   color: "#ffeb3b",
                   background: "rgba(0,0,0,0.3)",
                   borderRadius: 2,
-                  px: 3,
-                  py: 1,
+                  px: { xs: 1, md: 3 },
+                  py: { xs: 0.5, md: 1 },
                   textAlign: "center",
+                  fontSize: { xs: 16, md: 20 },
                 }}
               >
                 Best: {bestPerform.toFixed(2)} s
@@ -336,6 +356,7 @@ function Yoga() {
               sx={{
                 display: "flex",
                 justifyContent: { xs: "center", md: "flex-end" },
+                mt: { xs: 1, md: 0 },
               }}
             >
               <Button
@@ -346,11 +367,13 @@ function Yoga() {
                     "linear-gradient(135deg, #ff1744 0%, #b71c1c 100%)",
                   color: "white",
                   borderRadius: 2,
-                  px: 4,
-                  py: 1.5,
-                  fontSize: 18,
+                  px: { xs: 2, md: 4 },
+                  py: { xs: 1, md: 1.5 },
+                  fontSize: { xs: 14, md: 18 },
                   fontWeight: 700,
                   boxShadow: "0px 0px 15px rgba(255, 23, 68, 0.2)",
+                  minWidth: 120,
+                  minHeight: 44,
                   "&:hover": {
                     background:
                       "linear-gradient(135deg, #b71c1c 0%, #ff1744 100%)",
@@ -364,33 +387,40 @@ function Yoga() {
           </Grid>
           <Grid
             container
-            spacing={4}
+            spacing={{ xs: 1, md: 4 }}
             alignItems="center"
             justifyContent="center"
-            sx={{ mb: 3 }}
+            sx={{ mb: { xs: 1, md: 3 } }}
           >
             <Grid
               item
               xs={12}
-              md={6}
-              sx={{ display: "flex", justifyContent: "center" }}
+              md={4}
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                mb: { xs: 2, md: 0 },
+              }}
             >
               <Box
                 sx={{
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
+                  width: "100%",
+                  maxWidth: { xs: 200, sm: 250, md: 300 },
                 }}
               >
                 <img
                   src={poseImages[currentPose]}
                   alt={currentPose}
                   style={{
-                    maxWidth: 220,
-                    borderRadius: 8,
-                    boxShadow: "0 2px 12px 0 rgba(0,0,0,0.15)",
                     width: "100%",
                     height: "auto",
+                    maxWidth: "100%",
+                    borderRadius: 8,
+                    boxShadow: "0 2px 12px 0 rgba(0,0,0,0.15)",
+                    objectFit: "contain",
                   }}
                 />
               </Box>
@@ -401,24 +431,56 @@ function Yoga() {
               md={6}
               sx={{ display: "flex", justifyContent: "center" }}
             >
-              <Box sx={{ position: "relative", width: "100%", maxWidth: 900 }}>
+              <Box
+                sx={{
+                  position: "relative",
+                  width: "100%",
+                  maxWidth: { xs: "100vw", sm: 480, md: 900 },
+                  display: "flex",
+                  justifyContent: "center",
+                }}
+              >
                 <Webcam
-                  width={window.innerWidth > 900 ? "900px" : "100vw"}
-                  height={window.innerWidth > 900 ? "600px" : "56vw"}
+                  width={
+                    windowWidth > 900
+                      ? 900
+                      : windowWidth < 600
+                      ? Math.min(windowWidth - 32, 400)
+                      : 480
+                  }
+                  height={
+                    windowWidth > 900
+                      ? 600
+                      : windowWidth < 600
+                      ? Math.min((windowWidth - 32) * 0.75, 300)
+                      : 320
+                  }
                   ref={webcamRef}
                   style={{
                     borderRadius: 16,
                     boxShadow: "0 4px 32px 0 rgba(0,0,0,0.25)",
                     width: "100%",
-                    maxWidth: 900,
+                    maxWidth:
+                      windowWidth < 600 ? Math.min(windowWidth - 32, 400) : 900,
                     height: "auto",
+                    objectFit: "cover",
                   }}
                 />
                 <canvas
                   ref={canvasRef}
-                  width={window.innerWidth > 900 ? 900 : window.innerWidth}
+                  width={
+                    windowWidth > 900
+                      ? 900
+                      : windowWidth < 600
+                      ? Math.min(windowWidth - 32, 400)
+                      : 480
+                  }
                   height={
-                    window.innerWidth > 900 ? 600 : window.innerWidth * 0.66
+                    windowWidth > 900
+                      ? 600
+                      : windowWidth < 600
+                      ? Math.min((windowWidth - 32) * 0.75, 300)
+                      : 320
                   }
                   style={{
                     position: "absolute",
@@ -427,7 +489,8 @@ function Yoga() {
                     zIndex: 1,
                     borderRadius: 16,
                     width: "100%",
-                    maxWidth: 900,
+                    maxWidth:
+                      windowWidth < 600 ? Math.min(windowWidth - 32, 400) : 900,
                     height: "auto",
                   }}
                 />
@@ -468,39 +531,36 @@ function Yoga() {
       >
         <Toolbar
           sx={{
-            position: "relative",
-            display: "flex",
-            justifyContent: "center",
+            flexDirection: { xs: "column", sm: "row" },
             alignItems: "center",
-            minHeight: 80,
+            justifyContent: "center",
+            minHeight: { xs: 56, sm: 80 },
+            px: 2,
+            position: "relative",
           }}
         >
           <Typography
             variant="h4"
             sx={{
-              position: "absolute",
-              left: 0,
-              right: 0,
-              margin: "auto",
-              width: "fit-content",
               fontFamily: "Montserrat, Poppins, sans-serif",
               color: "white",
               letterSpacing: 1,
               textAlign: "center",
-              zIndex: 1,
+              width: "100%",
+              mb: { xs: 1, sm: 0 },
             }}
           >
             Asana Meter
           </Typography>
           <Box
             sx={{
-              position: "absolute",
-              right: 24,
               display: "flex",
               gap: 2,
-              minWidth: 240,
-              flexShrink: 0,
-              zIndex: 2,
+              position: { xs: "static", sm: "absolute" },
+              right: { sm: 24 },
+              mt: { xs: 1, sm: 0 },
+              width: { xs: "100%", sm: "auto" },
+              justifyContent: { xs: "center", sm: "flex-end" },
             }}
           >
             <Button
@@ -510,9 +570,11 @@ function Yoga() {
                 background: "linear-gradient(135deg, #7289da 0%, #2c3e50 100%)",
                 color: "white",
                 fontWeight: 700,
+                boxShadow: "none",
                 "&:hover": {
                   background:
                     "linear-gradient(135deg, #2c3e50 0%, #7289da 100%)",
+                  color: "white",
                 },
               }}
             >
@@ -610,6 +672,11 @@ function Yoga() {
         >
           <Instructions currentPose={currentPose} />
         </Box>
+        {apiError && (
+          <Box sx={{ color: "red", textAlign: "center", mb: 2 }}>
+            {apiError}
+          </Box>
+        )}
       </Container>
     </Box>
   );
