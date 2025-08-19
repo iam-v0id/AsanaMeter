@@ -231,9 +231,7 @@ function Yoga() {
       }
       userDetails.pose = currentPose;
       userDetails.time = poseTime;
-      const API_BASE_URL =
-        process.env.REACT_APP_API_URL || "http://localhost:5000";
-      const response = await fetch(`${API_BASE_URL}/add-time`, {
+      const response = await fetch(`/api/leaderboard/add-time`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

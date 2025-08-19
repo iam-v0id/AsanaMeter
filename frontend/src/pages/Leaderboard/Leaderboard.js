@@ -24,24 +24,16 @@ export default function Leaderboard() {
 
         const currentPose =
           localStorage.getItem("currentPose") || "Vrikshasana";
-        const API_BASE_URL =
-          process.env.REACT_APP_API_URL || "http://localhost:5000";
 
         console.log("Fetching leaderboard for pose:", currentPose);
-        console.log(
-          "API URL:",
-          `${API_BASE_URL}/leaderboard?pose=${currentPose}`
-        );
+        console.log("API URL:", `/api/leaderboard?pose=${currentPose}`);
 
-        const response = await fetch(
-          `${API_BASE_URL}/leaderboard?pose=${currentPose}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        const response = await fetch(`/api/leaderboard?pose=${currentPose}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
 
         console.log("Response status:", response.status);
 
