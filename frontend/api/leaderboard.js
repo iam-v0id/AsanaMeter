@@ -23,7 +23,7 @@ const Leaderboard =
   mongoose.model("Leaderboard", leaderboardSchema);
 
 export default async function handler(req, res) {
-  if (req.method === "POST" && req.url.endsWith("/add-time")) {
+  if (req.method === "POST" && req.url.endsWith("/api/leaderboard/add-time")) {
     const { userId, name, age, pose, time } = req.body;
     try {
       let existingUser = await Leaderboard.findOne({ userId, pose });
