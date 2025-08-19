@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 
-const MONGO_URI =
-  process.env.MONGO_URI || "mongodb://localhost:27017/yogaGameDB";
+const MONGO_URI = process.env.MONGO_URI;
 
 // Prevent multiple connections in dev
 if (!mongoose.connection.readyState) {
